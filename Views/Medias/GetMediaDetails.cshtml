@@ -1,4 +1,6 @@
-﻿@model Models.Media
+﻿@using DAL
+@model Models.Media
+
 
 @if (Model != null)
 {
@@ -15,22 +17,22 @@
                 }
             </dd>
 
-                @{
-            var likes = DB.Likes.ToList().Where(l => l.MediaId == Model.Id).ToList();
-            var likedByMe = likes.Any(l => l.UserId == Models.User.ConnectedUser.Id);
+            @{
+                var likes = DB.Likes.ToList().Where(l => l.MediaId == Model.Id).ToList();
+                var likedByMe = likes.Any(l => l.UserId == Models.User.ConnectedUser.Id);
             }
             <dd>
-            <span>@likes.Count j'aime</span>
-            <a href="#" class="toggleLikeCmd" mediaId="@Model.Id">
-            @if (likedByMe)
-            {
-                <i class="fa-solid fa-thumbs-up"></i>
-            }
-            else
-            {
-                <i class="fa-regular fa-thumbs-up"></i>
-            }
-            </a>
+                <span>@likes.Count j'aime</span>
+                <a href="#" class="toggleLikeCmd" mediaId="@Model.Id">
+                    @if (likedByMe)
+                    {
+                        <i class="fa-solid fa-thumbs-up"></i>
+                    }
+                    else
+                    {
+                        <i class="fa-regular fa-thumbs-up"></i>
+                    }
+                </a>
             </dd>
 
             <dd class="mediaTitle">

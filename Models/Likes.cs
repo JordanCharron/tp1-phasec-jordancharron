@@ -1,6 +1,5 @@
-﻿using DAL;
-using System;
-
+﻿using System;
+using DAL;
 public class Like : Record
 {
     public int UserId { get; set; }

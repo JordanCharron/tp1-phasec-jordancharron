@@ -286,6 +286,7 @@ namespace Controllers
         {
             DB.Events.Add("DeleteProfil");
             User connectedUser = Models.User.ConnectedUser;
+            DeleteUserData(connectedUser.Id);
             DB.Users.Delete(connectedUser.Id);
             return RedirectToAction("Login?message=Votre compte a été effacé avec succès!");
         }
@@ -382,68 +383,31 @@ namespace Controllers
                 {
                     DB.Events.Add("DeleteUser " + user.Name);
                     string message = "Votre compte a été effacé par l'administrateur du site.";
+                    DeleteUserData(id);
                     DB.Users.Delete(id);
                     AccountsEmailing.SendEmailUserStatusChanged(message, user);
                 }
             }
             return null;
         }
-        #region Login journal
-        [UserAccess(Access.Admin)]
-        public ActionResult LoginsJournal()
+        private void DeleteUserData(int userId)
         {
-            return View();
-        }
-        [UserAccess(Access.Admin)] // RefreshTimout = false otherwise periodical refresh with lead to never timed out session
-        public ActionResult GetLoginsList(bool forceRefresh = false)
-        {
-            if (DB.Logins.HasChanged || forceRefresh)
-            {
-                List<User> onlineUsers = DB.Users.ToList().Where(u => u.Online).ToList();
-                ViewBag.LoggedUsersId = onlineUsers.Select(u => u.Id).ToList();
-                List<Login> logins = DB.Logins.ToList().OrderByDescending(l => l.LoginDate).ToList();
-                return PartialView(logins);
-            }
-            return null;
-        }
-        [UserAccess(Access.Admin)]
-        public ActionResult EventsJournal()
-        {
-            return View();
-        }
-        [UserAccess(Access.Admin)] // RefreshTimout = false otherwise periodical refresh with lead to never timed out session
-        public ActionResult GetEventsList(bool forceRefresh = false)
-        {
-            if (DB.Events.HasChanged || forceRefresh)
-            {
-                List<Event> events = DB.Events.ToList().OrderByDescending(l => l.CreationDate).ToList();
-                return PartialView(events);
-            }
-            return null;
-        }
-        [UserAccess(Access.Admin)]
-        public ActionResult DeleteLoginsDay(string day)
-        {
-            try
-            {
-                DateTime date = DateTime.Parse(day);
-                DB.Logins.DeleteLoginsJournalDay(date);
-            }
-            catch (Exception) { }
-            return RedirectToAction("LoginsJournal");
-        }
-        [UserAccess(Access.Admin)]
-        public ActionResult DeleteEventsDay(string day)
-        {
-            try
-            {
-                DateTime date = DateTime.Parse(day);
-                DB.Events.DeleteEventsJournalDay(date);
-            }
+            DB.Likes.ToList()
+                .Where(l => l.UserId == userId)
+                .ToList()
+                .ForEach(l => DB.Likes.Delete(l.Id));
 
-            catch (Exception) { }
-            return RedirectToAction("EventsJournal");
+            DB.Medias.ToList()
+                .Where(m => m.OwnerId == userId)
+                .ToList()
+                .ForEach(m => {
+                    DB.Likes.ToList()
+                        .Where(l => l.MediaId == m.Id)
+                        .ToList()
+                        .ForEach(l => DB.Likes.Delete(l.Id));
+                    DB.Medias.Delete(m.Id);
+                });
         }
-        #endregion
+
     }
 }

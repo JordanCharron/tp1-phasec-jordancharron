@@ -1,4 +1,6 @@
-﻿@{
+﻿@using DAL
+
+@{
     string controller = HttpContext.Current.Request.RequestContext.RouteData.Values["controller"].ToString().ToLower();
     string action = HttpContext.Current.Request.RequestContext.RouteData.Values["action"].ToString().ToLower();
     bool search = Session["Search"] != null ? (bool)Session["Search"] : false;
@@ -15,6 +17,8 @@
 
     string checkSortByTitle = mediaSortBy == MediaSortBy.Title ? "fa-check" : "";
     string checkSortByDate = mediaSortBy == MediaSortBy.PublishDate ? "fa-check" : "";
+    string checkSortByLikes = mediaSortBy == MediaSortBy.Likes ? "fa-check" : "";
+
 
     string iconSortBy = "";
     string iconSortByTitle = "";
@@ -23,6 +27,7 @@
     {
         case MediaSortBy.Title: iconSortBy = "fa-solid fa-t"; iconSortByTitle = "Tri des vidéos par titre"; break;
         case MediaSortBy.PublishDate: iconSortBy = "fa-regular fa-calendar"; iconSortByTitle = "Tri des vidéos par date de publication"; break;
+        case MediaSortBy.Likes: iconSortBy = "fa-solid fa-heart"; iconSortByTitle = "Tri des vidéos par nombres de likes"; break;
     }
 
     bool userConnected = Models.User.ConnectedUser != null;
@@ -124,6 +129,11 @@
                                 <i class="menuIcon fa @checkSortByTitle"></i>
                                 <a href="/Medias/SetMediaSortBy?mediaSortBy=@MediaSortBy.Title">Trier par titre</a>
                             </div>
+                            <div class="dropdown-item item-layout">
+                                <i class="menuIcon fa @checkSortByLikes"></i>
+                                <a href="/Medias/SetMediaSortBy?mediaSortBy=@MediaSortBy.Likes">Trier par j'aime</a>
+                            </div>
+
 
                             <div class="dropdown-divider"></div>
 
@@ -182,6 +192,22 @@
 {
     <div class="flex">
         <input type="search" id="searchInput" class="section roundedBorder flexItem" value="@searchString" placeholder="Recherche...">
+        @{
+            var users = DB.Medias.ToList()
+                .Select(m => m.OwnerId).Distinct()
+                .Select(id => DB.Users.Get(id))
+                .Where(u => u != null).ToList();
+        }
+        <select onchange="location='/Medias/SetSearchUser/' + this.value">
+            <option value="">Tous les users</option>
+            @foreach (var u in users)
+            {
+                <option value="@u.Id">@u.Name</option>
+            }
+        </select>
+
+
+
         <div id="categorySelectPanel" class="flexItem">
             <!-- Dynamically refreshed -->
             @{ Html.RenderPartial("GetMediasCategoriesList"); }

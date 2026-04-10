@@ -18,10 +18,13 @@
             sessionStorage.setItem("RestoreScrollPosition", "1");
         })
 
-        function mediaDetailsPostRefresh() {
-            // todo
+      function mediaDetailsPostRefresh() {
             highlightKeyword();
-        }
+            $(".toggleLikeCmd").click(function(e) {
+                mediaDetails_ARP.command("/Medias/ToggleMediaLike/" + $(this).attr("mediaId"));
+                e.preventDefault();
+            });
+      }
 
         function highlightKeyword() {
             if ("@search" == "True") {

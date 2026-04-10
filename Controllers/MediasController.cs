@@ -64,7 +64,11 @@ public class MediasController : Controller
                 if (SelectedCategory != "")
                     result = result.Where(c => c.Category == SelectedCategory);
             }
-
+            if (Session["SearchUserId"] != null)
+            {
+                int uid = (int)Session["SearchUserId"];
+                result = result.Where(c => c.OwnerId == uid);
+            }
 
             if ((bool)Session["SortAscending"])
             {
@@ -74,6 +78,9 @@ public class MediasController : Controller
                         result = result.OrderBy(c => c.Title); break;
                     case MediaSortBy.PublishDate:
                         result = result.OrderBy(c => c.PublishDate); break;
+                    case MediaSortBy.Likes:
+                        result = result.OrderBy(c => DB.Likes.ToList().Count(l => l.MediaId == c.Id)); break;
+
                 }
             }
             else
@@ -84,6 +91,8 @@ public class MediasController : Controller
                         result = result.OrderByDescending(c => c.Title); break;
                     case MediaSortBy.PublishDate:
                         result = result.OrderByDescending(c => c.PublishDate); break;
+                    case MediaSortBy.Likes:
+                        result = result.OrderByDescending(c => DB.Likes.ToList().Count(l => l.MediaId == c.Id)); break;
                 }
             }
             if (result.Count() < nbItems + index)
@@ -256,6 +265,12 @@ public class MediasController : Controller
         Session["SelectedCategory"] = value;
         return RedirectToAction("List");
     }
+    public ActionResult SetSearchUser(int? userId)
+    {
+        Session["SearchUserId"] = userId;
+        return GetMedias(true);
+    }
+
     public ActionResult About()
     {
         return View();
@@ -361,13 +376,31 @@ public class MediasController : Controller
             {
                 if (Media.OwnerId == Models.User.ConnectedUser.Id || Models.User.ConnectedUser.IsAdmin)
                 {
+                    DB.Likes.ToList()
+                        .Where(l => l.MediaId == id)
+                        .ToList()
+                        .ForEach(l => DB.Likes.Delete(l.Id));
+
                     DB.Medias.Delete(id);
+
                     return RedirectToAction("List");
                 }
                 return Redirect("/Accounts/Login?message=Accès illégal! &success=false");
             }
         }
         return Redirect("/Accounts/Login?message=Accès illégal! &success=false");
+    }
+    public ActionResult ToggleMediaLike(int id)
+    {
+        var userId = Models.User.ConnectedUser.Id;
+        var existing = DB.Likes.ToList()
+            .FirstOrDefault(l => l.UserId == userId && l.MediaId == id);
+        if (existing != null)
+            DB.Likes.Delete(existing.Id);
+        else
+            DB.Likes.Add(new Like { UserId = userId, MediaId = id, CreatedDate = DateTime.Now });
+
+        return GetMedias(true);
     }
 
     // This action is meant to be called by an AJAX request

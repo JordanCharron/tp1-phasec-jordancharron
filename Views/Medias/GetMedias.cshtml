@@ -28,6 +28,26 @@
                 <div style="display: grid; grid-template-columns: auto 120px; align-items: last baseline ">
 
                     <div style="margin-left: 4px; color: gray; font-size: 0.65em">@media.Category  @Helper.When(media.PublishDate) </div>
+                    @{
+                            var likes = DB.Likes.ToList()
+                            .Where(l => l.MediaId == media.Id)
+                            .ToList();
+                             var likedByMe = likes.Any(l => l.UserId == Models.User.ConnectedUser.Id);
+                             var likerNames = string.Join(", ", likes.Select(l => DB.Users.Get(l.UserId)?.Name ?? "?"));
+                    }
+                          <span>@likes.Count j'aime</span>
+                           <a href="#" class="toggleLikeCmd" mediaId="@media.Id">
+                                @if (likedByMe)
+                                {
+                                    <i class="fa-solid fa-thumbs-up"></i>
+                                }
+                                else
+                                {
+                                    <i class="fa-regular fa-thumbs-up"></i>
+                                }
+                            </a>
+
+
 
                    
                 </div>
@@ -35,3 +55,5 @@
         }
     }
 }
+
+

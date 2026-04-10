@@ -34,8 +34,9 @@
                         .Where(l => l.MediaId == media.Id)
                         .ToList();
                         var likedByMe = likes.Any(l => l.UserId == Models.User.ConnectedUser.Id);
+                        var likerNames = string.Join(", ", likes.Select(l => DB.Users.Get(l.UserId) != null ? DB.Users.Get(l.UserId).Name : "?"));
                     }
-                    <span>@likes.Count j'aime</span>
+                    <span title="@likerNames">@likes.Count j'aime</span>
                     <a href="#" class="toggleLikeCmd" mediaId="@media.Id">
                         @if (likedByMe)
                         {

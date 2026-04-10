@@ -197,12 +197,20 @@
                 .Select(m => m.OwnerId).Distinct()
                 .Select(id => DB.Users.Get(id))
                 .Where(u => u != null).ToList();
+            int selectedUserId = Session["SearchUserId"] != null ? (int)Session["SearchUserId"] : 0;
         }
-        <select onchange="location='/Medias/SetSearchUser/' + this.value">
+        <select onchange="location='/Medias/SetSearchUser?userId=' + this.value">
             <option value="">Tous les users</option>
             @foreach (var u in users)
             {
-                <option value="@u.Id">@u.Name</option>
+                if (u.Id == selectedUserId)
+                {
+                    <option value="@u.Id" selected="selected">@u.Name</option>
+                }
+                else
+                {
+                    <option value="@u.Id">@u.Name</option>
+                }
             }
         </select>
 

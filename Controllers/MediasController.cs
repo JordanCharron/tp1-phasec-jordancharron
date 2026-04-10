@@ -267,8 +267,9 @@ public class MediasController : Controller
     }
     public ActionResult SetSearchUser(int? userId)
     {
+        ResetMediasPaging();
         Session["SearchUserId"] = userId;
-        return GetMedias(true);
+        return RedirectToAction("List");
     }
 
     public ActionResult About()
@@ -400,7 +401,7 @@ public class MediasController : Controller
         else
             DB.Likes.Add(new Like { UserId = userId, MediaId = id, CreatedDate = DateTime.Now });
 
-        return GetMedias(true);
+        return null;
     }
 
     // This action is meant to be called by an AJAX request

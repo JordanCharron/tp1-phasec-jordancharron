@@ -20,9 +20,10 @@
             @{
                 var likes = DB.Likes.ToList().Where(l => l.MediaId == Model.Id).ToList();
                 var likedByMe = likes.Any(l => l.UserId == Models.User.ConnectedUser.Id);
+                var likerNames = string.Join(", ", likes.Select(l => DB.Users.Get(l.UserId) != null ? DB.Users.Get(l.UserId).Name : "?"));
             }
             <dd>
-                <span>@likes.Count j'aime</span>
+                <span title="@likerNames">@likes.Count j'aime</span>
                 <a href="#" class="toggleLikeCmd" mediaId="@Model.Id">
                     @if (likedByMe)
                     {
